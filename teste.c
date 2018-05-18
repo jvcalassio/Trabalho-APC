@@ -65,7 +65,6 @@
 
 /*  TO DO LIST:
 	BALANCEAMENTO DOS ENEMYS/FUEL
-	COLOCAR VIDAS EXTRAS
 	PISCAR NAVE AO BATER E PERDER VIDA
 	CORES NOS ENEMYS/FUEL/HP
 	FAZER A NAVE BATER NOS OBSTACULOS E PAREDES NO MOVIMENTO VERTICAL
@@ -75,12 +74,11 @@
    tamanho do aviao : 3x2 (y,x) */
 int refY = 9;
 int refX = 1;
-/*  variaveis do jogo
+/*  VARIAVEIS DO JOGO
 	loopa: estado do jogo (rodando ou nao)
 	atirando: se há projetil em movimento
 	gas: combustivel
 	vidas: vidas do player
-	dific: dificuldade (1,2,3)
 	km: distancia percorrida
 */
 int loopa = 0;
@@ -234,32 +232,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			if(atirando==1){
 				mov_proj(vet);
 			}
-		} /*else if ((b==75||b==97) && (refX>0)){   a/seta pra esquerda 
-			refX--;
-			for(i=0;i<3;i++){
-				for(j=0;j<=2;j++){
-					vet[refY+i][refX+j] = vet[refY+i][refX+j+1];
-				}
-			}
-			if(atirando==1){
-				mov_proj(vet);
-			}
-		} else if((b==77||b==100) && (refX<35)){  d/seta pra direita  
-			for(i=0;i<3;i++){
-				for(j=2;j>=0;j--){
-					if(j==0){
-						vet[refY+i][refX+j+1] = vet[refY+i][refX+j];
-						vet[refY+i][refX] = ' ';
-					} else {
-						vet[refY+i][refX+j+1] = vet[refY+i][refX+j];
-					}
-				}
-			}
-			refX++;
-			if(atirando==1){
-				mov_proj(vet);
-			}
-		}*/ else if((b==32)) {/* espaco - tiro */
+		} else if((b==32)) {/* espaco - tiro */
 			if(atirando==1){
 				mov_proj(vet);
 			}		
@@ -286,6 +259,7 @@ void show(char vet[ROWS][COLUMNS]){
 	printf("|  GAS: %d | PONTOS: %d | KM: %.1f \n", gas, pontos, km);
 	printf(" -----------------------------------------------\n");
 }
+/* menu */
 void infos(){
 	system(CLEAR);
 	printf("\n\n\tInstrucoes:\n");
@@ -299,6 +273,7 @@ void infos(){
 	printf(" Pressione <ENTER> para jogar\n");
 	printf(" Pressione <ESC> para sair\n");
 }
+/* game over */
 void game_over(char motivo[23]){
 	system(CLEAR);
 	printf("\n\n\tGAME OVER\n\t%s\n\tDISTANCIA PERCORRIDA: %.1f km\n\t",motivo,km);
@@ -312,6 +287,7 @@ void game_over(char motivo[23]){
 		}
 	}
 }
+/* execucao do jogo */
 void jogar(){
 	system(CLEAR);
 	refY = 9;
