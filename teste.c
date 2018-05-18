@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #ifdef _WIN32
 	#include <windows.h>
 	#include <conio.h>
@@ -19,6 +17,8 @@
     	CloseHandle(timer); 
 	}
 #else
+	#include <termios.h>
+	#include <fcntl.h>
 	int kbhit(){
 		struct termios oldt, newt;
 		int ch, oldf;
