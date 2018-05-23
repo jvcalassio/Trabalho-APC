@@ -68,10 +68,10 @@
 /* expressão que gera um número aleatório no intervalo [1, 100]*/
 #define RAND() (rand()%100 + 1)
 /*  TO DO LIST:
-	BALANCEAMENTO DOS ENEMYS/FUEL
+	BALANCEAMENTO DOS ENEMYS/FUEL > OK
 	CORES NOS ENEMYS/FUEL/HP
-	FAZER A NAVE BATER NOS OBSTACULOS E PAREDES NO MOVIMENTO VERTICAL
-	MENU BONITO
+	FAZER A NAVE BATER NOS OBSTACULOS E PAREDES NO MOVIMENTO VERTICAL > OK
+	MENU BONITO > OK
 */
 /* posição do bloco superior esquerdo do aviao
    tamanho do aviao : 3x2 (y,x) */
@@ -222,7 +222,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			}
 			for(i=0;i<=3;i++){
 				for(j=0;j<=2;j++){
-					if(vet[refY+1+i][refX+j]!='@'){
+					if(vet[refY+1+i][refX+j]!='@' && vet[refY+1+i][refX+j]!='+' && vet[refY+1+i][refX+j]!='X'){
 						vet[refY+i][refX+j] = vet[refY+1+i][refX+j];
 					} else {
 						vet[refY+i][refX+j] = ' ';
@@ -240,7 +240,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			}
 			for(i=3;i>=0;i--){
 				for(j=0;j<=2;j++){
-					if(vet[refY+i-1][refX+j]!='@'){
+					if(vet[refY+i-1][refX+j]!='@' && vet[refY+i-1][refX+j]!='+' && vet[refY+i-1][refX+j]!='X'){
 						vet[refY+i][refX+j] = vet[refY+i-1][refX+j];
 					} else {
 						vet[refY+i][refX+j] = ' ';
@@ -432,8 +432,8 @@ void menu_f(){
     	int c = getch();
     	if(c==B_ENTER){
     		switch(sel){
-    			case 1 : jogar(); break;
-    			case 2 : infos(); break;
+    			case 1 : x=0;jogar(); break;
+    			case 2 : x=0;infos(); break;
     			case 5 : x=0; break;
     		}
     	} else {
