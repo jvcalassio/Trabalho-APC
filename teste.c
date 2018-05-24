@@ -83,6 +83,8 @@ int refX = 1;
 	gas: combustivel
 	vidas: vidas do player
 	velocidade: tempo de atualizacao do sleep, em microssegundos
+	probX = probabilidade de surgir um obstaculo
+	probY = probabilidade de surgir um combustivel
 */
 int loopa = 0;
 int atirando = 0;
@@ -135,7 +137,7 @@ void m_baixo(char vet[ROWS][COLUMNS]){
 		}
 	}
 }
-/* move os projeteis e faz colisao deles com os obstaculos/buffs*/
+/* move os projeteis e faz colisao deles com os obstaculos/combustiveis pt1*/
 void mov_proj(char vet[ROWS][COLUMNS]){
 	int i, j, stop_proj=1;
 	for(i=5;i<16;i++){
@@ -164,7 +166,7 @@ void mov_proj(char vet[ROWS][COLUMNS]){
 		atirando = 0;
 	}
 }
-/* gera os inimigos e combustiveis, move, faz a colisao com a nave, e com os projeteis */
+/* gera os inimigos e combustiveis, move, faz a colisao deles com a nave, e com os projeteis pt2*/
 void ger_ev(char vet[ROWS][COLUMNS]){
 	int i, j;
 	for(i=5;i<16;i++){
@@ -273,7 +275,13 @@ void show(char vet[ROWS][COLUMNS]){
 	int i,j;
 	for(i=0;i<ROWS;i++){
 		for(j=0;j<COLUMNS;j++){
-			printf("%c",vet[i][j]);
+			if(vet[i][j]=='X'){
+				printf("\x1b[31m" "%c" "\x1b[0m", vet[i][j]);
+			} else if(vet[i][j]=='+'){
+				printf("\x1b[32m" "%c" "\x1b[0m", vet[i][j]);
+			} else {
+				printf("%c",vet[i][j]);
+			}
 		}
 		printf("\n");
 	}
@@ -281,8 +289,10 @@ void show(char vet[ROWS][COLUMNS]){
 	printf("|  GAS: %d | PONTOS: %d \n", gas, pontos);
 	printf(" ------------------------------------------------------------\n");
 }
-/* menu */
+/* apenas para corrigir o erro da chamada do menu */
 void menu_f();
+
+/* tela de instrucoes */
 void infos(){
 	system(CLEAR);
 	printf("\n\n\tInstrucoes:\n");
@@ -396,6 +406,7 @@ void att(char vet[ROWS][COLUMNS], int tipo){
 		printf("\n");
 	}
 }
+/* menu principal */
 void menu_f(){
 	system(CLEAR);
 	char menu[ROWS][COLUMNS] = {{'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#',},
@@ -449,8 +460,7 @@ void menu_f(){
     }
 }
 int main(){
-	/* muda a seed de geracao das posicoes aleatorias*/
-	srand(time(0));
+	srand(time(0)); /* muda a seed de geracao das posicoes aleatorias*/
     menu_f();
 	return 0;
 }
