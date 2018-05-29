@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-
 #ifdef _WIN32
 	#include <windows.h>
 	#include <conio.h>
@@ -83,8 +82,9 @@ int refX = 1;
 	gas: combustivel
 	vidas: vidas do player
 	velocidade: tempo de atualizacao do sleep, em microssegundos
-	probX = probabilidade de surgir um obstaculo
-	probY = probabilidade de surgir um combustivel
+	probX: probabilidade de surgir um obstaculo
+	probY: probabilidade de surgir um combustivel
+	piscou: verifica se a nave piscou (tecla invalida)
 */
 int loopa = 0;
 int atirando = 0;
@@ -94,7 +94,7 @@ int pontos = 0;
 int velocidade = 50000;
 int probX;
 int probF;
-
+int piscou = 0;
 /* move a parte de cima do campo 
 	da primeira linha ate a linha 4 da matriz
 */
@@ -202,9 +202,44 @@ void ger_ev(char vet[ROWS][COLUMNS]){
 		}
 	}
 }
+void pisca_nave(char vet[ROWS][COLUMNS]){
+	if(piscou==0){
+		piscou = 1;
+	} else if(piscou==5){
+		piscou = 0;
+	}
+}
 /* caso o jogador aperte um comando invalido */
 void penalidade(char vet[ROWS][COLUMNS]){
-
+	int i, j;
+	int c = RAND();
+	if(c<50 && refY>4){
+		refY--;
+		gas-=2;
+		for(i=0;i<=3;i++){
+			for(j=0;j<=2;j++){
+				if(vet[refY+1+i][refX+j]!='@' && vet[refY+1+i][refX+j]!='+' && vet[refY+1+i][refX+j]!='X'){
+					vet[refY+i][refX+j] = vet[refY+1+i][refX+j];
+				} else {
+					vet[refY+i][refX+j] = ' ';
+				}
+			}
+		}
+		pisca_nave(vet);
+	} else if(c>50 && refY<14){
+		for(i=3;i>=0;i--){
+			for(j=0;j<=2;j++){
+				if(vet[refY+i-1][refX+j]!='@' && vet[refY+i-1][refX+j]!='+' && vet[refY+i-1][refX+j]!='X'){
+					vet[refY+i][refX+j] = vet[refY+i-1][refX+j];
+				} else {
+					vet[refY+i][refX+j] = ' ';
+				}
+			}
+		}
+		refY++;
+		gas-=2;
+		pisca_nave(vet);
+	}
 }
 /* move o aviao e controla o tiro dos projeteis
    apenas entre as linhas 4 e 17
@@ -214,7 +249,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 	int c = kbhit();
 	if(c==1){
 		int b = getch();
-		if((b==119) && (refY>4)){ /* w - mov pra cima */
+		if((b==119 || b==87) && (refY>4)){ /* w - mov pra cima */
 			refY--;
 			gas-=2;
 			if(vet[refY-1][refX]=='X' || vet[refY][refX+1]=='X'){
@@ -234,7 +269,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			if(atirando==1){
 				mov_proj(vet);
 			}
-		} else if ((b==115) && (refY<14)){ /* s - mov pra baixo */
+		} else if ((b==115 || b==83) && (refY<14)){ /* s - mov pra baixo */
 			if(vet[refY+3][refX]=='X' || vet[refY+2][refX+1]=='X'){
 				vidas--;
 			} else if(vet[refY+3][refX]=='+' || vet[refY+2][refX+1]=='+'){
@@ -261,8 +296,11 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			vet[refY+1][refX+2] = '>';
 			atirando = 1;
 			gas-=3;
-		} else {
+		} else if(b!=32 && b!=115 && b!=83 && b!=119 && b!=87){ /* penalidade - botao invalido */
 			penalidade(vet);
+			if(atirando==1){
+				mov_proj(vet);
+			}
 		}
 	} else {
 		if(atirando==1){
@@ -272,22 +310,26 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 }
 /* mostra o jogo */
 void show(char vet[ROWS][COLUMNS]){
-	int i,j;
+	int i, j;
 	for(i=0;i<ROWS;i++){
 		for(j=0;j<COLUMNS;j++){
 			if(vet[i][j]=='X'){
 				printf("\x1b[31m" "%c" "\x1b[0m", vet[i][j]);
 			} else if(vet[i][j]=='+'){
 				printf("\x1b[32m" "%c" "\x1b[0m", vet[i][j]);
+			} else if(vet[i][j]=='D' && piscou!=0 && piscou<5){
+				printf("\e[0;31m" "%c" "\e[0;0m", vet[i][j]);
+				piscou++;
+				pisca_nave(vet);
 			} else {
 				printf("%c",vet[i][j]);
 			}
 		}
 		printf("\n");
 	}
-	printf(" ------------------------------------------------------------\n");
-	printf("|  GAS: %d | PONTOS: %d \n", gas, pontos);
-	printf(" ------------------------------------------------------------\n");
+	printf("-------------------------------------------------------------\n");
+	printf("  COMBUSTIVEL: %d | PONTOS: %d \n", gas, pontos);
+	printf("-------------------------------------------------------------\n");
 }
 /* apenas para corrigir o erro da chamada do menu */
 void menu_f();
@@ -296,14 +338,14 @@ void menu_f();
 void infos(){
 	system(CLEAR);
 	printf("\n\n\tInstrucoes:\n");
-	printf(" W : movem a nave para cima\n");
-	printf(" S : movem a nave para baixo\n");
+	printf(" W : move a nave para cima\n");
+	printf(" S : move a nave para baixo\n");
 	printf(" Espaco : atira\n");
-	printf(" Atire nos obstaculos, para ganhar pontos e sobreviver\n");
-	printf(" Se voce bater, game over\n");
-	printf(" A nave gasta combustivel, mas ha suprimentos de combustivel durante o percurso\n");
+	printf(" Atire nos obstaculos \x1b[31mX\x1b[0m, para ganhar pontos e sobreviver.\n");
+	printf(" A nave gasta combustivel, mas ha recargas \x1b[32m+\x1b[0m durante o percurso.\n");
+	printf(" Se voce ficar sem combustivel ou bater, game over.\n");
 	printf(" Seus tiros gastam combustivel, entao fique atento!\n");
-	printf(" Pressione qualquer botao para voltar ao menu\n");
+	printf(" Pressione qualquer botao para voltar ao menu.\n");
 	int x = 1;
 	while(x==1){
 		int c = getch();
@@ -403,17 +445,21 @@ void att(char vet[ROWS][COLUMNS], int tipo){
 		for(j=0;j<COLUMNS;j++){
 			printf("%c",vet[i][j]);
 		}
-		printf("\n");
+		if(i!=ROWS-1){
+			printf("\n");
+		}
 	}
+	printf("- S : muda de alternativa | Enter = seleciona              -\n");
+	printf("------------------------------------------------------------\n");
 }
 /* menu principal */
 void menu_f(){
 	system(CLEAR);
 	char menu[ROWS][COLUMNS] = {{'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#',},
                                    {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
-                                   {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_','_',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_',' ',' ',' ',' ','_','_',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
+                                   {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_','_',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','_',' ',' ',' ',' ','_','_',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
                                    {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','/',' ','_','(','_',')',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','(',' ',')',' ',' ','/',' ','_','|',' ','|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
-                                   {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ','|','_',' ','_',' ','_',' ','_','_',' ','_','_','_',' ',' ',' ','_',' ','_','_',' ','|','/',' ',' ','|',' ','|',' ','|',' ','|','_',' ',' ',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
+                                   {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ','|','_',' ','_',' ','_',' ','_','_',' ','_','_','_',' ',' ',' ','_',' ','_','_',' ','|','/',' ',' ','|',' ','|','_','|',' ','|','_',' ',' ',' ','_',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',},
                                    {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ',' ','_','|',' ','|',' ','\'','_','_','/',' ','_',' ','\\',' ','|',' ','\'','_',' ','\\',' ',' ',' ',' ','|',' ',' ','_','|',' ','|',' ','|',' ','|',' ','|',' ',' ',' ',' ',' ',' ',' ',' ','#',},
                                    {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ','|',' ','|',' ','|',' ','|',' ','|',' ',' ','_','_','/',' ','|',' ','|',' ','|',' ','|',' ',' ',' ','|',' ','|',' ','|',' ','|',' ','|','_','|',' ','|',' ',' ',' ',' ',' ',' ',' ',' ','#',},
                                    {'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|','_','|',' ','|','_','|','_','|',' ',' ','\\','_','_','_','|',' ','|','_','|',' ','|','_','|',' ',' ',' ','|','_','|',' ','|','_','|','\\','_','_',',',' ','|',' ',' ',' ',' ',' ',' ',' ',' ','#',},
@@ -448,7 +494,7 @@ void menu_f(){
     			case 5 : x=0; break;
     		}
     	} else {
-    		if(c==115){
+    		if(c==115 || c==83){
     			if(sel<5){
     				sel++;
     			} else {
