@@ -66,12 +66,6 @@
 #define COLUMNS 60
 /* expressão que gera um número aleatório no intervalo [1, 100]*/
 #define RAND() (rand()%100 + 1)
-/*  TO DO LIST:
-	BALANCEAMENTO DOS ENEMYS/FUEL > OK
-	CORES NOS ENEMYS/FUEL/HP
-	FAZER A NAVE BATER NOS OBSTACULOS E PAREDES NO MOVIMENTO VERTICAL > OK
-	MENU BONITO > OK
-*/
 /* posição do bloco superior esquerdo do aviao
    tamanho do aviao : 3x2 (y,x) */
 int refY = 9;
@@ -411,6 +405,7 @@ void jogar(){
 		ger_ev(campo);
 		show(campo);
 		gas--;
+		pontos++;
 		if(vidas<=0){
 			loopa = 0;
 			game_over("VOCE MORREU");
