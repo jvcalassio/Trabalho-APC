@@ -1,3 +1,14 @@
+/*
+	Universidade de Brasilia
+	Instituto de Ciencias Exatas
+	Departamento de Ciencia da Computacao
+	Algoritmos e Programação de Computadores – 1/2018
+	Aluno(a): Joao Victor de Souza Calassio
+	Matricula: 180033808
+	Turma: A
+	Versão do compilador: <versao utilizada>
+	Descricao: 
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -134,6 +145,8 @@ void m_baixo(char vet[ROWS][COLUMNS]){
 /* move os projeteis e faz colisao deles com os obstaculos/combustiveis pt1*/
 void mov_proj(char vet[ROWS][COLUMNS]){
 	int i, j, stop_proj=1;
+	/* stop_proj : caso nao haja nenhum tiro se movendo, seta atirando=0
+		para nao executar essa funcao e economizar processamento */
 	for(i=5;i<16;i++){
 		for(j=COLUMNS-2;j>2;j--){
 			if(vet[i][j]=='X'||vet[i][j]=='+'){
@@ -196,14 +209,14 @@ void ger_ev(char vet[ROWS][COLUMNS]){
 		}
 	}
 }
-void pisca_nave(char vet[ROWS][COLUMNS]){
+void pisca_nave(char vet[ROWS][COLUMNS]){ /* pisca nave (caso o jogador aperte uma tecla invalida) */
 	if(piscou==0){
 		piscou = 1;
 	} else if(piscou==5){
 		piscou = 0;
 	}
 }
-/* caso o jogador aperte um comando invalido */
+/* caso o jogador aperte uma invalido */
 void penalidade(char vet[ROWS][COLUMNS]){
 	int i, j;
 	int c = RAND();
@@ -220,7 +233,7 @@ void penalidade(char vet[ROWS][COLUMNS]){
 			}
 		}
 		pisca_nave(vet);
-	} else if(c>50 && refY<14){
+	} else if(c>=50 && refY<14){
 		for(i=3;i>=0;i--){
 			for(j=0;j<=2;j++){
 				if(vet[refY+i-1][refX+j]!='@' && vet[refY+i-1][refX+j]!='+' && vet[refY+i-1][refX+j]!='X'){
@@ -260,7 +273,7 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 					}
 				}
 			}
-			if(atirando==1){
+			if(atirando==1){ /* continua movimento dos tiros */
 				mov_proj(vet);
 			}
 		} else if ((b==115 || b==83) && (refY<14)){ /* s - mov pra baixo */
@@ -280,11 +293,11 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			}
 			refY++;
 			gas-=2;
-			if(atirando==1){
+			if(atirando==1){ /* continua movimento dos tiros */
 				mov_proj(vet);
 			}
 		} else if((b==32)) {/* espaco - tiro */
-			if(atirando==1){
+			if(atirando==1){ /* continua movimento dos tiros */
 				mov_proj(vet);
 			}		
 			vet[refY+1][refX+2] = '>';
@@ -292,12 +305,12 @@ void m_aviao(char vet[ROWS][COLUMNS]){
 			gas-=3;
 		} else if(b!=32 && b!=115 && b!=83 && b!=119 && b!=87){ /* penalidade - botao invalido */
 			penalidade(vet);
-			if(atirando==1){
+			if(atirando==1){ /* continua movimento dos tiros */
 				mov_proj(vet);
 			}
 		}
 	} else {
-		if(atirando==1){
+		if(atirando==1){ /* continua movimento dos tiros */
 			mov_proj(vet);
 		}
 	}
@@ -307,11 +320,11 @@ void show(char vet[ROWS][COLUMNS]){
 	int i, j;
 	for(i=0;i<ROWS;i++){
 		for(j=0;j<COLUMNS;j++){
-			if(vet[i][j]=='X'){
+			if(vet[i][j]=='X'){ /* coloracao do X */
 				printf("\x1b[31m" "%c" "\x1b[0m", vet[i][j]);
-			} else if(vet[i][j]=='+'){
+			} else if(vet[i][j]=='+'){ /* coloracao do + */
 				printf("\x1b[32m" "%c" "\x1b[0m", vet[i][j]);
-			} else if(vet[i][j]=='D' && piscou!=0 && piscou<5){
+			} else if(vet[i][j]=='D' && piscou!=0 && piscou<5){ /* mostrar nave piscando */
 				printf("\e[0;31m" "%c" "\e[0;0m", vet[i][j]);
 				piscou++;
 				pisca_nave(vet);
@@ -366,6 +379,7 @@ void game_over(char motivo[23]){
 /* execucao do jogo */
 void jogar(){
 	system(CLEAR);
+	/* zera as variaveis de jogo */
 	refY = 9;
 	refX = 1;
 	atirando = 0;
@@ -502,6 +516,6 @@ void menu_f(){
 }
 int main(){
 	srand(time(0)); /* muda a seed de geracao das posicoes aleatorias*/
-    menu_f();
+	menu_f();
 	return 0;
 }
