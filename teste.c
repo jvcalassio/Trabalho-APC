@@ -6,8 +6,8 @@
 	Aluno(a): Joao Victor de Souza Calassio
 	Matricula: 180033808
 	Turma: A
-	Versão do compilador: <versao utilizada>
-	Descricao: 
+	Versão do compilador: gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.9) padrao ANSI
+	Descricao: Jogo de nave, cujo objetivo é atirar nos inimigos e conseguir a maior quantidade de pontos possivel
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 #ifdef _WIN32
 	#include <windows.h>
 	#include <conio.h>
-	void usleep(__int64 usec) 
+	/*void usleep(__int64 usec) 
 	{ 
    		HANDLE timer; 
     	LARGE_INTEGER ft; 
@@ -27,7 +27,7 @@
     	SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0); 
     	WaitForSingleObject(timer, INFINITE); 
     	CloseHandle(timer); 
-	}
+	} */
 #else
 	#include <termios.h>
 	#include <fcntl.h>
@@ -383,7 +383,7 @@ void jogar(){
 	refY = 9;
 	refX = 1;
 	atirando = 0;
-	gas = 300;
+	gas = 400;
 	vidas = 1;
 	pontos = 0;
 	char campo[ROWS][COLUMNS]= {{'.','.','.','.','.','.','.','.','.','.','.','.','.','.','@','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','@','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','@','.','.','.','.','.',},
