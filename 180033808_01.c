@@ -81,7 +81,7 @@ int refX = 1;
 	piscou: verifica se a nave piscou (tecla invalida)
 */
 int loopa = 0;
-int atirando = 0;
+int atirando = 1;
 int piscou = 0;
 int vidas = 1;
 int ranked;
@@ -96,6 +96,30 @@ int probO;
 int probT;
 int vidaO;
 int municaoT;
+
+/* structs dos inimigos T e O, e do ranking */
+typedef struct {
+	int x;
+	int y;
+	int tirosT;
+} tipo_T; 
+
+typedef struct {
+	int x;
+	int y;
+	int hpO;
+} tipo_O;
+
+typedef struct {
+	char nick[11];
+	int score;
+} player;
+
+
+tipo_O inimigo_O[1000];
+int o_atual = 0;
+tipo_T inimigo_T[10];
+int t_atual = 0;
 
 /* gera o campo */
 void gerar_campo(char campo[ROWS][COLUMNS]){
@@ -114,25 +138,30 @@ void gerar_campo(char campo[ROWS][COLUMNS]){
 		}
 	}
 }
-/* move os projeteis e faz colisao deles com os obstaculos/combustiveis pt1*/
+/* move os projeteis e faz colisao deles com os obstaculos/combustiveis X pt1*/
 void mov_proj(char vet[ROWS][COLUMNS]){
 	int i, j, stop_proj=1;
 	/* stop_proj : caso nao haja nenhum tiro se movendo, seta atirando=0
 		para nao executar essa funcao e economizar processamento */
 	for(i=1;i<altura-1;i++){
 		for(j=largura-2;j>1;j--){
-			if(vet[i][j]=='X'||vet[i][j]=='F'){
+			if(vet[i][j]=='X'||vet[i][j]=='F'||vet[i][j]=='O'||vet[i][j]=='T'){
 				if(vet[i][j-1]=='>'){
 					if(vet[i][j]=='X'){
 						pontos+=50;
+						vet[i][j-1]=' ';
+						vet[i][j]=' ';
+					} else {
+						vet[i][j-1]=' ';
+						vet[i][j]=' ';
 					}
-					vet[i][j-1]=' ';
-					vet[i][j]=' ';
 				}
 			} else {
 				if(vet[i][j]=='>'){
-					vet[i][j+1]='>';
-					vet[i][j]=' ';
+					if(vet[i][j+1]!='O'){
+						vet[i][j+1]='>';
+						vet[i][j]=' ';
+					}
 					if(j==largura-2){
 						vet[i][j+1]=' ';
 					}
@@ -145,26 +174,33 @@ void mov_proj(char vet[ROWS][COLUMNS]){
 		atirando = 0;
 	}
 }
-/* gera os inimigos e combustiveis, move, faz a colisao deles com a nave, e com os projeteis pt2*/
+/* gera os inimigos X e combustiveis, move, faz a colisao deles com a nave, e com os projeteis pt2*/
 void ger_ev(char vet[ROWS][COLUMNS]){
 	int i, j;
 	for(i=1;i<altura-1;i++){
 		for(j=0;j<largura;j++){
-			if(vet[i][j]=='F' || vet[i][j]=='X'){
+			if(vet[i][j]=='F' || vet[i][j]=='X' || vet[i][j]=='O' || vet[i][j]=='T'){
 				if(vet[i][j-1]=='>'){
 					if(vet[i][j]=='X'){
 						pontos+=50;
+						vet[i][j-1]=' ';
+						vet[i][j]=' ';
+					} else {
+						vet[i][j-1]=' ';
+						vet[i][j]=' ';
 					}
-					vet[i][j-1]=' ';
-					vet[i][j]=' ';
 				} else if(j!=0 && vet[i][j-1]!='+' && vet[i][j-1]!='>'){
 					vet[i][j-1] = vet[i][j];
-				} else if(vet[i][j-1]=='+' && vet[i][j]=='X'){
+					vet[i][j] = ' ';
+				} else if(vet[i][j-1]=='+' && (vet[i][j]=='X' || vet[i][j]=='T')){
 					vidas--;
+					vet[i][j] = ' ';
 				} else if(vet[i][j-1]=='+' && vet[i][j]=='F'){
 					gas+=40;
+					vet[i][j] = ' ';
+				} else {
+					vet[i][j] = ' ';
 				}
-				vet[i][j] = ' ';
 			}
 		}
 	}
@@ -172,13 +208,35 @@ void ger_ev(char vet[ROWS][COLUMNS]){
 	int trG; /* random generator temporario, apenas para escolher a posicao */  
 	if(rG>=0 && rG <=probF){
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X') && trG<altura-1){
+		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
 			vet[trG][largura-2] = 'F';
 		}
-	} else if (rG>probF && rG<=probX){
+	} else if (rG>probF && rG<=(probF+probX)){
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X') && trG<altura-1){
+		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
 			vet[trG][largura-2] = 'X';
+		}
+	} else if (rG>(probF+probX) && rG<=(probF+probX+probO)){
+		trG = 1+rand()%9;
+		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
+			if(o_atual<1000){
+				vet[trG][largura-2] = 'O';
+				inimigo_O[o_atual].x = largura-2;
+				inimigo_O[o_atual].y = trG;
+				inimigo_O[o_atual].hpO = vidaO;
+				o_atual++;
+			}
+		}
+	} else if (rG>(probF+probX+probO) && rG<=(probF+probX+probO+probT)){
+		trG = 1+rand()%9;
+		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
+			if(t_atual<10){
+				vet[trG][largura-2] = 'T';
+				inimigo_T[t_atual].x = largura-2;
+				inimigo_T[t_atual].y = trG;
+				inimigo_T[t_atual].tirosT = municaoT;
+				t_atual++;
+			}
 		}
 	}
 }
@@ -325,15 +383,121 @@ void game_over(char motivo[23]){
 	}
 }
 
+/* atualiza as posicoes dos O, faz a colisao deles com os tiros */
+void att_posicoes_o(char vet[ROWS][COLUMNS]){
+	int i, j, k;
+	for(i=1;i<altura;i++){
+		for(j=0;j<largura-2;j++){
+			if(vet[i][j]=='O'){
+				for(k=0;k<o_atual;k++){
+					if(inimigo_O[k].y==i && inimigo_O[k].x==j+1){
+						inimigo_O[k].x--;
+						/*printf(":: cod: %d x:%d y:%d hp:%d ::\n",k,inimigo_O[k].x,inimigo_O[k].y,inimigo_O[k].hpO);*/
+						if(vet[i][j-1]=='>'){
+							vet[i][j-1]=' ';
+							inimigo_O[k].hpO--;
+						}
+						if(vet[i][j-2]=='>'){
+							vet[i][j-2]=' ';
+							inimigo_O[k].hpO--;
+						}
+						if(inimigo_O[k].hpO<=0){
+							vet[i][j]=' ';
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/* tamanho da string */
+int size(char a[]){
+	int i=0;
+	while(a[i]!='\0'){
+		i++;
+	}
+	return i;
+}
+
+/* comparador para o qsort */
+int compare (const void * a, const void * b)
+{
+
+  player *playerA = (player *)a;
+  player *playerB = (player *)b;
+
+  return ( playerB->score - playerA->score );
+}
+
+/* grava o ranking no arquivo */
+/* obs sobre o ranking: 
+	de 0 a 9 = 10 primeiros do ranking
+	10 = ultimo colocado (jogador da partida atual)
+		nao aparece no ranking, apenas para facilitar
+	
+*/
+
+void grava_ranking(player jogador){
+	FILE* fd;
+	player old_players[11];
+	int i,j;
+
+	fd = fopen("ranking.bin","rb");
+	if(fd==NULL){
+		fd = fopen("ranking.bin","wb");
+
+		old_players[0] = jogador;
+		fwrite(&old_players[0],sizeof(player),1,fd);
+		for(i=1;i<10;i++){
+			for(j=0;j<10;j++)
+				old_players[i].nick[j] = ' ';
+			old_players[i].nick[10] = '\0';
+			old_players[i].score = 0;
+			fwrite(&old_players[i],sizeof(player),1,fd);
+		}
+	} else {
+		for(i=0;i<10;i++){
+			fread(&old_players[i],sizeof(player),1,fd);
+		}
+		old_players[10] = jogador;
+		qsort(old_players,11,sizeof(player),compare);
+		fclose(fd);
+		fd = fopen("ranking.bin","wb");
+		for(i=0;i<10;i++){
+			fwrite(&old_players[i],sizeof(player),1,fd);
+		}
+	}
+	fclose(fd);
+}
+
+/* tela do usuario digitar o nickname para ranked */
+void read_nickname(char nickname[]){
+	system(CLEAR);
+	int i;
+	printf("\n\n");
+	printf("\tModo Rankeado\n");
+	printf("\tDigite seu nickname (min 1, max 10 caracteres):\n\t");
+	scanf("%s",nickname);
+	i = size(nickname);
+	while(i<1 || i>10){
+		printf("\tNickname invalido. Por favor, digite novamente:\n\t");
+		scanf("%s",nickname);
+		i = size(nickname);
+	}
+}
+
 /* execucao do jogo */
 void jogar(){
 	system(CLEAR);
 	int taltura,tlargura,tprobX,tprobF,tprobO,tprobT,tvidaO,tmunicaoT,tvelocidade;
+	player jogador;
 
 	/* le o arquivo de cfg */
 	FILE* fd;
 	fd = fopen("config.txt","r");
 	fscanf(fd, "%d %d %d %d %d %d %d %d %d %d",&altura,&largura,&probX,&probF,&probO,&probT,&vidaO,&municaoT,&velocidade,&ranked);
+	fclose(fd);
 
 	/* muda as variaveis de jogo */
 	atirando = 0;
@@ -345,6 +509,8 @@ void jogar(){
 
 	/* se for ranked, volta para esses valores e salva os do arquivo nos temporarios*/
 	if(ranked==1){
+		read_nickname(jogador.nick);
+		setbuf(stdin,NULL); /* limpa o buffer para nao bugar o caractere do nome no input do jogo*/
 		taltura = altura;
 		tlargura = largura;
 		tprobX = probX;
@@ -371,6 +537,7 @@ void jogar(){
 	while(loopa==1){
 		usleep(velocidade);
 		system(CLEAR);
+		att_posicoes_o(campo);
 		m_aviao(campo);
 		ger_ev(campo);
 		show(campo);
@@ -386,6 +553,8 @@ void jogar(){
 		}
 	}
 	if(ranked==1){
+		jogador.score = pontos;
+
 		altura = taltura;
 		largura = tlargura;
 		probX = tprobX;
@@ -395,6 +564,8 @@ void jogar(){
 		vidaO = tvidaO;
 		municaoT = tmunicaoT;
 		velocidade = tvelocidade;
+
+		grava_ranking(jogador);
 	}
 }
 
@@ -682,6 +853,38 @@ void config(){
 		}
 	}
 }
+
+/* tela que mostra o ranking */
+void rank_scr(){
+	int x = 1;
+	int c, i;
+
+	FILE* fd;
+	fd = fopen("ranking.bin","rb");
+	player jogador[11];
+
+	system(CLEAR);
+	printf("\n\n");
+	printf("\tRanking\n\n");
+	if(fd==NULL){
+		printf("\tSem registros.\n");
+	} else {
+		printf("\tScore\tNome\n");
+		for(i=0;i<10;i++){
+			fread(&jogador[i], sizeof(player), 1, fd);
+			printf("\t%d\t%s\n",jogador[i].score,jogador[i].nick);
+		}
+	}
+	printf("\n\t> Voltar\n");
+
+	while(x==1){
+		c = getch();
+		if(c==B_ENTER){
+			x = 0;
+		}
+	}
+}
+
 /* atualiza o menu principal */
 void att(char vet[ROWS_M][COLUMNS_M], int tipo){
 	int i,j;
@@ -778,6 +981,7 @@ void menu_f(){
     		switch(sel){
     			case 1 : jogar(); break;
     			case 2 : infos(); break;
+    			case 3 : rank_scr(); break;
     			case 4 : config(); break;
     			case 5 : x=0; break;
     		}
