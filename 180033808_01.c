@@ -101,13 +101,13 @@ int municaoT;
 typedef struct {
 	int x;
 	int y;
-	int tirosT;
+	int tiros;
 } tipo_T; 
 
 typedef struct {
 	int x;
 	int y;
-	int hpO;
+	int hp;
 } tipo_O;
 
 typedef struct {
@@ -116,9 +116,9 @@ typedef struct {
 } player;
 
 
-tipo_O inimigo_O[100]; /* array dos inimigos O */
+tipo_O inimigo_O[150]; /* array dos inimigos O */
 int o_atual = 0;
-tipo_T inimigo_T[10]; /* array dos inimigos T */
+tipo_T inimigo_T[150]; /* array dos inimigos T */
 int t_atual = 0;
 
 /* gera o campo */
@@ -211,36 +211,48 @@ void ger_ev(char vet[ROWS][COLUMNS]){
 	int trG; /* random generator temporario, apenas para escolher a posicao */  
 	if(rG>=0 && rG <=probF){ /* gera F */
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
-			vet[trG][largura-2] = 'F';
+		if((vet[trG][largura-2]!='F' && vet[trG][largura-2]!='X' && vet[trG][largura-2]!='O' && vet[trG][largura-2]!='T') && trG<altura-1){
+			if((vet[trG][largura-3]!='F' && vet[trG][largura-3]!='X' && vet[trG][largura-3]!='O' && vet[trG][largura-3]!='T')){
+				vet[trG][largura-2] = 'F';
+			}
 		}
 	} else if (rG>probF && rG<=(probF+probX)){ /* gera X */
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
-			vet[trG][largura-2] = 'X';
+		if((vet[trG][largura-2]!='F' && vet[trG][largura-2]!='X' && vet[trG][largura-2]!='O' && vet[trG][largura-2]!='T') && trG<altura-1){
+			if((vet[trG][largura-3]!='F' && vet[trG][largura-3]!='X' && vet[trG][largura-3]!='O' && vet[trG][largura-3]!='T')){
+				vet[trG][largura-2] = 'X';
+			}
 		}
 	} else if (rG>(probF+probX) && rG<=(probF+probX+probO)){ /* gera O */
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
-			if(o_atual<100){
-				/* seta os dados do novo O */
-				vet[trG][largura-2] = 'O';
-				inimigo_O[o_atual].x = largura-3;
-				inimigo_O[o_atual].y = trG;
-				inimigo_O[o_atual].hpO = vidaO;
-				o_atual++;
+		if((vet[trG][largura-2]!='F' && vet[trG][largura-2]!='X' && vet[trG][largura-2]!='O' && vet[trG][largura-2]!='T') && trG<altura-1){
+			if((vet[trG][largura-3]!='F' && vet[trG][largura-3]!='X' && vet[trG][largura-3]!='O' && vet[trG][largura-3]!='T')){
+				if(o_atual<150){
+					/* seta os dados do novo O */
+					vet[trG][largura-2] = 'O';
+					inimigo_O[o_atual].x = largura-3;
+					inimigo_O[o_atual].y = trG;
+					inimigo_O[o_atual].hp = vidaO;
+					o_atual++;
+				} else {
+					o_atual = 0;
+				}
 			}
 		}
 	} else if (rG>(probF+probX+probO) && rG<=(probF+probX+probO+probT)){ /* gera T */
 		trG = 1+rand()%9;
-		if((vet[trG][largura-2]!='F' || vet[trG][largura-2]!='X' || vet[trG][largura-2]!='O' || vet[trG][largura-2]!='T') && trG<altura-1){
-			if(t_atual<10){
-				/* seta os dados do novo T */
-				vet[trG][largura-2] = 'T';
-				inimigo_T[t_atual].x = largura-2;
-				inimigo_T[t_atual].y = trG;
-				inimigo_T[t_atual].tirosT = municaoT;
-				t_atual++;
+		if((vet[trG][largura-2]!='F' && vet[trG][largura-2]!='X' && vet[trG][largura-2]!='O' && vet[trG][largura-2]!='T') && trG<altura-1){
+			if((vet[trG][largura-3]!='F' && vet[trG][largura-3]!='X' && vet[trG][largura-3]!='O' && vet[trG][largura-3]!='T')){
+				if(t_atual<150){
+					/* seta os dados do novo T */
+					vet[trG][largura-2] = 'T';
+					inimigo_T[t_atual].x = largura-3;
+					inimigo_T[t_atual].y = trG;
+					inimigo_T[t_atual].tiros = municaoT;
+					t_atual++;
+				} else {
+					t_atual = 0;
+				}
 			}
 		}
 	}
@@ -340,6 +352,8 @@ void show(char vet[ROWS][COLUMNS]){
 				printf("\x1b[32m" "%c" "\x1b[0m", vet[i][j]);
 			} else if(vet[i][j]=='O'){ 
 				printf("\x1b[34m" "%c" "\x1b[0m", vet[i][j]);
+			} else if(vet[i][j]=='T'||vet[i][j]=='<'){
+				printf("\e[0;93m" "%c" "\e[0m", vet[i][j]);
 			} else if(vet[i][j]=='+' && piscou!=0 && piscou<2){ /* mostrar nave piscando */
 				printf("\e[0;31m" "%c" "\e[0;0m", vet[i][j]);
 				piscou++;
@@ -355,9 +369,6 @@ void show(char vet[ROWS][COLUMNS]){
 	printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
 }
 
-/* apenas para corrigir o erro da chamada do menu */
-void menu_f();
-
 /* tela de instrucoes */
 void infos(){
 	system(CLEAR);
@@ -367,6 +378,8 @@ void infos(){
 	printf("\t Espaco : atira\n");
 	printf("\t Atire nos obstaculos \x1b[31mX\x1b[0m, para ganhar pontos e sobreviver.\n");
 	printf("\t A nave gasta combustivel, mas ha recargas \x1b[32mF\x1b[0m durante o percurso.\n");
+	printf("\t Tome cuidado com os inimigos \e[0;93mT\e[0m, eles atiram em voce, mas tem tiros limitados.\n");
+	printf("\t Os inimigos \x1b[34mO\x1b[0m precisam de mais tiros para morrer, mas explodem todos os X quando morrem\n");
 	printf("\t Se voce ficar sem combustivel ou bater, game over.\n");
 	printf("\t Seus tiros gastam combustivel, entao fique atento!\n");
 	printf("\t Apertar um botao invalido acarretara em um movimento aleatorio.\n\n");
@@ -414,15 +427,15 @@ void att_posicoes_o(char vet[ROWS][COLUMNS]){
 			if(vet[i][j]=='O'){
 				for(k=0;k<o_atual;k++){
 					if((inimigo_O[k].y == i) && (inimigo_O[k].x == j)){
-						/*printf(":: cod: %d x:%d y:%d hp:%d ::\n",k,inimigo_O[k].x,inimigo_O[k].y,inimigo_O[k].hpO);*/
-						if(inimigo_O[k].hpO>0){
+						/*printf(":: cod: %d x:%d y:%d hp:%d ::\n",k,inimigo_O[k].x,inimigo_O[k].y,inimigo_O[k].hp);*/
+						if(inimigo_O[k].hp>0){
 							if(vet[i][j-1]=='>'){
 								vet[i][j-1]=' ';
-								inimigo_O[k].hpO--;
+								inimigo_O[k].hp--;
 							}
 							if(vet[i][j-2]=='>'){
 								vet[i][j-2]=' ';
-								inimigo_O[k].hpO--;
+								inimigo_O[k].hp--;
 							}
 							inimigo_O[k].x--;
 						} else {
@@ -431,6 +444,71 @@ void att_posicoes_o(char vet[ROWS][COLUMNS]){
 							inimigo_O[k].y = 0;
 							spec_O(vet);
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/* move os tiros do T */
+void mov_tiros_t(char vet[ROWS][COLUMNS]){
+	int i, j;
+	for(i=1;i<altura;i++){
+		for(j=0;j<largura-2;j++){
+			if(vet[i][j]=='<' && j>=3){
+				if(vet[i][j-1]=='+'||vet[i][j-2]=='+'){
+					vidas--;
+					vet[i][j-2]='<';
+				}
+				if(vet[i][j-2]=='>' || vet[i][j-1]=='>'){
+					vet[i][j]=' ';
+					if(vet[i][j-2]=='>'){
+						vet[i][j-2]=' ';
+					} else {
+						vet[i][j-1]=' ';
+					}
+				} else {
+					if(vet[i][j-2]==' '){
+						vet[i][j-2]='<';
+						vet[i][j]=' ';
+					} else {
+						if(vet[i][j-2]=='X'||vet[i][j-2]=='O'||vet[i][j-2]=='F'||vet[i][j-2]=='T'){
+							vet[i][j-4]='<';
+							vet[i][j]=' ';
+						} else if(vet[i][j-1]=='X'||vet[i][j-1]=='O'||vet[i][j-1]=='F'||vet[i][j-1]=='T'){
+							vet[i][j-3]='<';
+							vet[i][j]=' ';
+						}
+					}
+				}
+			} else if(vet[i][j]=='<' && j<=2){
+				if(vet[i][j-1]=='+'||vet[i][j-2]=='+'){
+					vidas--;
+					vet[i][j-2]='<';
+				}
+				vet[i][j]=' ';
+			}
+		}
+	}
+}
+
+/* atualiza as posicoes do T e gera o tiro */
+void att_posicoes_t(char vet[ROWS][COLUMNS]){
+	int i, j, k, r;
+	for(i=1;i<altura;i++){
+		for(j=0;j<largura-2;j++){
+			if(vet[i][j]=='T'){
+				for(k=0;k<t_atual;k++){
+					if((inimigo_T[k].y == i) && (inimigo_T[k].x == j)){
+						if(inimigo_T[k].tiros>0 && vet[i][j-2]==' '){
+							r = RAND();
+							if(r<15 && j>2){
+								vet[i][j-2]='<';
+								inimigo_T[k].tiros--;
+							}
+						}
+						inimigo_T[k].x--;
 					}
 				}
 			}
@@ -449,9 +527,9 @@ int size(char a[]){
 
 /* comparador para o qsort */
 int compare (const void * a, const void * b){
-  player *playerA = (player *)a;
-  player *playerB = (player *)b;
-  return ( playerB->score - playerA->score );
+	player *playerA = (player *)a;
+	player *playerB = (player *)b;
+	return (playerB->score - playerA->score);
 }
 
 /* grava o ranking no arquivo */
@@ -461,7 +539,6 @@ int compare (const void * a, const void * b){
 		 (jogador da partida atual, nao aparece no ranking)
 	
 */
-
 void grava_ranking(player jogador){
 	FILE* fd;
 	player old_players[11];
@@ -497,8 +574,8 @@ void grava_ranking(player jogador){
 
 /* tela do usuario digitar o nickname para ranked */
 void read_nickname(char nickname[]){
-	system(CLEAR);
 	int i;
+	system(CLEAR);
 	printf("\n\n");
 	printf("\t\e[1;33mModo Rankeado\e[0m\n");
 	printf("\tDigite seu nickname (min 1, max 10 caracteres):\n\t");
@@ -513,10 +590,8 @@ void read_nickname(char nickname[]){
 
 /* execucao do jogo */
 void jogar(){
-	system(CLEAR);
 	int taltura,tlargura,tprobX,tprobF,tprobO,tprobT,tvidaO,tmunicaoT,tvelocidade;
 	player jogador;
-
 	/* le o arquivo de cfg */
 	FILE* fd;
 	fd = fopen("config.txt","r");
@@ -556,6 +631,7 @@ void jogar(){
 		velocidade = 60000;
 	}
 	char campo[ROWS][COLUMNS];
+	system(CLEAR);
 	gerar_campo(campo);
 	loopa = 1;
 
@@ -565,8 +641,10 @@ void jogar(){
 		system(CLEAR);
 		/* chama as funcoes do jogo */
 		att_posicoes_o(campo);
+		mov_tiros_t(campo);
 		m_aviao(campo);
 		ger_ev(campo);
+		att_posicoes_t(campo);
 		show(campo);
 		gas--;
 		pontos++;
@@ -608,11 +686,11 @@ void savesettings(){
 
 /* menu de configuracoes do tabuleiro */
 void cfg_tabuleiro(){
-	system(CLEAR);
 	int x = 1;
 	char seletor[] = {'>',' ',' ',' '};
 	int c;
 
+	system(CLEAR);
 	printf("\n\n");
 	printf("\t\e[1;33mConfiguracoes do tabuleiro\e[0m\n\n");
 	printf("\t%c Altura: %d\n",seletor[0],altura);
@@ -693,11 +771,11 @@ void cfg_tabuleiro(){
 
 /* menu de configuracoes dos npcs */
 void cfg_npcs(){
-	system(CLEAR);
 	int x = 1;
 	char seletor[] = {'>',' ',' ',' ',' ',' ',' '};
 	int c;
 
+	system(CLEAR);
 	printf("\n\n");
 	printf("\t\e[1;33mConfiguracoes dos inimigos/combustivel\e[0m\n\n");
 	printf("\t%c Probabilidade do X: %d%%\n",seletor[0],probX);
